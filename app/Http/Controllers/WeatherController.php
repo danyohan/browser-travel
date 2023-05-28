@@ -2,20 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Dto\WeatherDto;
 use App\Interfaces\WeatherInterface;
 use App\Models\Weather;
+use App\Services\Mapper;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Symfony\Component\VarDumper\VarDumper;
 
 class WeatherController extends Controller
 {
-    private $weatherInterface;
-    private $weatherService;
 
-    public function __construct(WeatherInterface $weatherInterface, WeatherService $weatherService)
+
+    public function __construct(
+       private WeatherInterface $weatherInterface,
+       private WeatherService $weatherService,
+       private Mapper $mapper
+       )
     {
-        $this->weatherInterface = $weatherInterface;
-        $this->weatherService = $weatherService;
     }
 
     /**
@@ -23,7 +28,9 @@ class WeatherController extends Controller
      */
     public function index()
     {
-        return $this->weatherInterface->getData();
+        $cities = $this->weatherInterface->getData();
+        $dataDto = null;
+        return view('welcome', compact('cities','dataDto' ));
     }
 
     /**
@@ -40,7 +47,20 @@ class WeatherController extends Controller
     public function show($weather)
     {       
         $data  = $this->weatherInterface->getById($weather);
-        return   $this->weatherService->getWeatherByCity($data);
+        if($data)
+        {
+
+            $dataJson = $this->weatherService->getWeatherByCity($data);
+            $dataDto =  $this->mapper->conver($dataJson);
+            $html =  view('map', compact('dataDto'))->render();
+
+            return response()->json([
+                'status' => true,
+                'html' => $html
+            ]);
+        }
+        
+        return null;
     }
 
     /**
