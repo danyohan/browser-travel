@@ -12,11 +12,8 @@ class Mapper
     {
         return new WeatherDto(
             $data['coord'],
-            $data['main']['humidity']
+            $data['main']['humidity'],
+            $data['name']
         );
-
-       
     }
-
-   
 }

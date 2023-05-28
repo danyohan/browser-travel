@@ -16,11 +16,10 @@ class WeatherController extends Controller
 
 
     public function __construct(
-       private WeatherInterface $weatherInterface,
-       private WeatherService $weatherService,
-       private Mapper $mapper
-       )
-    {
+        private WeatherInterface $weatherInterface,
+        private WeatherService $weatherService,
+        private Mapper $mapper
+    ) {
     }
 
     /**
@@ -30,36 +29,41 @@ class WeatherController extends Controller
     {
         $cities = $this->weatherInterface->getData();
         $dataDto = null;
-        return view('welcome', compact('cities','dataDto' ));
+        return view('weather', compact('cities', 'dataDto'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display weather history
      */
-    public function store(Request $request)
+    public function showHistory()
     {
-        //
+        $history = $this->weatherInterface->getWeatherHistory();
+        return view('history', compact('history'));
     }
+    
 
     /**
      * Display the specified resource.
      */
     public function show($weather)
-    {       
+    {
         $data  = $this->weatherInterface->getById($weather);
-        if($data)
-        {
+        if ($data) {
 
             $dataJson = $this->weatherService->getWeatherByCity($data);
-            $dataDto =  $this->mapper->conver($dataJson);
-            $html =  view('map', compact('dataDto'))->render();
+            $dataDto  =  $this->mapper->conver($dataJson);
+
+            //to create the history
+            $this->weatherInterface->create($dataDto);
+
+            $html     =  view('map', compact('dataDto'))->render();
 
             return response()->json([
                 'status' => true,
                 'html' => $html
             ]);
         }
-        
+
         return null;
     }
 
