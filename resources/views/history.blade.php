@@ -18,7 +18,7 @@
       @endforeach
       </tbody>
   </table>
-  <div class="card.footer">
+  <div class="d-flex justify-content-end">
     {!! $history->links() !!}
   </div>
   
